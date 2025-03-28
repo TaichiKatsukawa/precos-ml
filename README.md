@@ -1,5 +1,5 @@
 # Requisitos
-Obter preços de GPUs para analisar descontos e criar avisos quando houver um desconto grande.
+Obter preços do Mercado Livre para analisar preços e descontos.
 
 # Fontes
-https://github.com/doomedcat17/gpu-price-api
+https://developers.mercadolivre.com.br/pt_br/api-docs-pt-br
