@@ -4,11 +4,12 @@ from pprint import pprint
 
 def main():
     access_token = get_access_token()
-    product_name = "DJI action 4"
-    products = search_product(access_token, product_name)
+    product_name = "switch oled"
+    products = search_product(access_token, product_name, 5)
     
+    product_market_data = []
     for item, name in products.items():
-        search_items(access_token, item, name)
+        search_data = search_items(access_token, item, name, 10)
 
 def get_access_token():
     refresh_token = 'TG-67e721d2aa3540000124c846-230655983'
@@ -26,8 +27,9 @@ def get_access_token():
     return response['access_token']
 
 
-def search_product(access_token, product_name):
-    url = f"https://api.mercadolibre.com/products/search?status=active&site_id=MLB&q={product_name}&limit=50"
+def search_product(access_token, product_name, limit=10):
+    # limit includes blank requests
+    url = f"https://api.mercadolibre.com/products/search?status=active&site_id=MLB&q={product_name}&limit={limit}"
 
     payload = {}
     headers = {
@@ -43,7 +45,8 @@ def search_product(access_token, product_name):
     return results_list
 
 
-def search_items(access_token, product_id, product_name=''):
+def search_items(access_token, product_id, product_name='', limit=5):
+    # limit of items per product searched
     url = f"https://api.mercadolibre.com/products/{product_id}/items"
 
     payload = {}
@@ -53,11 +56,29 @@ def search_items(access_token, product_id, product_name=''):
 
     response = requests.request("GET", url, headers=headers, data=payload).json()
 
-    if 'error' not in response:
-        print(f'{product_name} [{product_id}]')
-        print(f"Preço: {response['results'][0]['price']}")
+    search_data = []
+    if 'error' not in response and (result_count := len(response['results'])) != 1:
+        if limit >= result_count:
+            max_limit = result_count
+        else:
+            max_limit = limit
+        
+        i = 0
+        while i < max_limit:
+            data = {
+                'product_name': product_name,
+                'product_id': product_id,
+                'price': response['results'][i]['price'],
+                'original_price': response['results'][i]['original_price'],
+                'seller_id': response['results'][i]['seller_id'],
+                'free_shipping': response['results'][i]['shipping']['free_shipping'],
+                'warranty': response['results'][i]['warranty']
+            }
+            i += 1
+            search_data.append(data)
     
-    #pprint(response)
+    pprint(search_data)
+    return search_data
 
 
 if __name__ == "__main__":
